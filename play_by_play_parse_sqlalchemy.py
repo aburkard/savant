@@ -24,10 +24,20 @@ home_fouls = 0
 away_fouls = 0
 half_score = ''
 
-## Retrieve box score for 1st half starters
+## Retrieve box score for full game
 response = urllib2.urlopen(box_score_url)
 box_score_html = response.read()
 box_score_soup = BeautifulSoup(box_score_html)
+
+## Retrieve box score for 1st half
+response = urllib2.urlopen(first_half_url)
+box_score_html1 = response.read()
+box_score_soup1 = BeautifulSoup(box_score_html1)
+
+## Retrieve box score for 2nd half
+response = urllib2.urlopen(second_half_url)
+box_score_html2 = response.read()
+box_score_soup2 = BeautifulSoup(box_score_html2)
 
 ## Retrieve play by play soup
 reponse = urllib2.urlopen(play_by_play_url)
@@ -45,13 +55,10 @@ game = title.split('|')[0].strip()
 game_date = title.split('|')[2].split('-')[0].strip()
 
 ## Define function for parsing starters and stats
-def parse_summary(box_url):
-	response = urllib2.urlopen(box_url)
-	box_html = response.read()
-	box_soup = BeautifulSoup(box_html)
-	boxes = box_soup.find_all(class_='stats-fullbox details clearfix')
+def parse_summary(box_score_soup):
+	boxes = box_score_soup.find_all(class_='stats-fullbox details clearfix')
 	# Parse out the starters and total stats for MIT
-	boxes = box_soup.find_all(class_='stats-fullbox details clearfix')
+	boxes = box_score_soup.find_all(class_='stats-fullbox details clearfix')
 	# Find the right table
 	table = None
 	for box in boxes:
@@ -98,13 +105,13 @@ def parse_summary(box_url):
 	return starters, stats
 
 ## Parse out the starters and total stats for MIT
-starters, stats = parse_summary(box_score_url)
+starters, stats = parse_summary(box_score_soup)
 
 ## Parse out 1st half starters and stats for MIT
-first_starters, first_stats = parse_summary(first_half_url)
+first_starters, first_stats = parse_summary(box_score_soup1)
 
 ## Parse out 2nd half starters and stats for MIT
-second_starters, second_stats = parse_summary(second_half_url)
+second_starters, second_stats = parse_summary(box_score_soup2)
 
 ## Define the parameters surrounding a play-by-play event
 class GameEvent:
